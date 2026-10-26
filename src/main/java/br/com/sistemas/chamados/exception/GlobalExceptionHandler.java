@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
             .map(e -> e.getField() + ": " + e.getDefaultMessage())
             .toList();
         return montar(HttpStatus.BAD_REQUEST, "Dados inválidos", detalhes);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErroResposta> tipoInvalido(MethodArgumentTypeMismatchException ex) {
+        return montar(HttpStatus.BAD_REQUEST, "Parâmetro inválido: " + ex.getName(),
+            List.of("Valor recebido: " + ex.getValue()));
     }
 
     private ResponseEntity<ErroResposta> montar(
