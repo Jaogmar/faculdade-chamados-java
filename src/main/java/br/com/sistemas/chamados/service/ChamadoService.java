@@ -11,8 +11,8 @@ import br.com.sistemas.chamados.dto.ChamadoRequest;
 import br.com.sistemas.chamados.dto.ChamadoResponse;
 import br.com.sistemas.chamados.entity.Categoria;
 import br.com.sistemas.chamados.entity.Chamado;
-import br.com.sistemas.chamados.entity.Cliente;
-import br.com.sistemas.chamados.entity.Tecnico;
+import br.com.sistemas.chamados.entity.Usuario;
+import br.com.sistemas.chamados.enums.Perfil;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.exception.AcessoNegadoException;
@@ -20,8 +20,7 @@ import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.CategoriaRepository;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
-import br.com.sistemas.chamados.repository.ClienteRepository;
-import br.com.sistemas.chamados.repository.TecnicoRepository;
+import br.com.sistemas.chamados.repository.UsuarioRepository;
 import br.com.sistemas.chamados.security.ContextoUsuario;
 import br.com.sistemas.chamados.security.UsuarioLogado;
 
@@ -29,20 +28,17 @@ import br.com.sistemas.chamados.security.UsuarioLogado;
 public class ChamadoService {
 
     private final ChamadoRepository repository;
-    private final ClienteRepository clienteRepository;
+    private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
-    private final TecnicoRepository tecnicoRepository;
     private final ContextoUsuario contexto;
 
     public ChamadoService(ChamadoRepository repository,
-                          ClienteRepository clienteRepository,
+                          UsuarioRepository usuarioRepository,
                           CategoriaRepository categoriaRepository,
-                          TecnicoRepository tecnicoRepository,
                           ContextoUsuario contexto) {
         this.repository = repository;
-        this.clienteRepository = clienteRepository;
+        this.usuarioRepository = usuarioRepository;
         this.categoriaRepository = categoriaRepository;
-        this.tecnicoRepository = tecnicoRepository;
         this.contexto = contexto;
     }
 
@@ -61,17 +57,18 @@ public class ChamadoService {
                                         Long clienteId, Pageable pageable) {
         UsuarioLogado usuario = contexto.atual();
         if (usuario.isCliente()) {
-            clienteId = usuario.clienteId(); // cliente só enxerga os próprios chamados
+            clienteId = usuario.id(); // cliente só enxerga os próprios chamados
         }
         return repository.filtrar(status, prioridade, clienteId, pageable)
             .map(ChamadoResponse::de);
     }
 
+    /** Chamados de um usuário CLIENTE: o próprio cliente ou ADMIN/TECNICO. */
     @Transactional(readOnly = true)
     public Page<ChamadoResponse> listarPorCliente(Long clienteId, Pageable pageable) {
-        verificarAcessoCliente(clienteId);
+        contexto.exigirProprioOuPerfil(clienteId, Perfil.ADMIN, Perfil.TECNICO);
         buscarCliente(clienteId);
-        return listar(null, null, clienteId, pageable);
+        return repository.filtrar(null, null, clienteId, pageable).map(ChamadoResponse::de);
     }
 
     @Transactional(readOnly = true)
@@ -105,7 +102,7 @@ public class ChamadoService {
     private Long resolverClienteId(Long informado) {
         UsuarioLogado usuario = contexto.atual();
         if (usuario.isCliente()) {
-            return usuario.clienteId();
+            return usuario.id();
         }
         if (informado == null) {
             throw new RegraNegocioException("Cliente é obrigatório");
@@ -113,46 +110,45 @@ public class ChamadoService {
         return informado;
     }
 
-    private void verificarAcessoCliente(Long clienteId) {
-        UsuarioLogado usuario = contexto.atual();
-        if (usuario.isCliente() && !clienteId.equals(usuario.clienteId())) {
-            throw new AcessoNegadoException("Acesso negado aos chamados do cliente " + clienteId);
-        }
-    }
-
     private Chamado buscarEntityComAcesso(Long id) {
-        Chamado chamado = buscarEntity(id);
+        Chamado chamado = repository.findById(id)
+            .orElseThrow(() -> new RecursoNaoEncontradoException(
+                "Chamado " + id + " não encontrado"));
         UsuarioLogado usuario = contexto.atual();
-        if (usuario.isCliente() && !chamado.getCliente().getId().equals(usuario.clienteId())) {
+        if (usuario.isCliente() && !chamado.getCliente().getId().equals(usuario.id())) {
             throw new AcessoNegadoException("Acesso negado ao chamado " + id);
         }
         return chamado;
     }
 
-    private Chamado buscarEntity(Long id) {
-        return repository.findById(id)
-            .orElseThrow(() -> new RecursoNaoEncontradoException(
-                "Chamado " + id + " não encontrado"));
+    private Usuario buscarCliente(Long id) {
+        Usuario usuario = buscarUsuario(id);
+        if (usuario.getPerfil() != Perfil.CLIENTE) {
+            throw new RegraNegocioException("Usuário " + id + " não é um cliente");
+        }
+        return usuario;
     }
 
-    private Cliente buscarCliente(Long id) {
-        return clienteRepository.findById(id)
+    private Usuario buscarTecnico(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Usuario usuario = buscarUsuario(id);
+        if (!usuario.getPerfil().isEquipe()) {
+            throw new RegraNegocioException("Usuário " + id + " não é um técnico");
+        }
+        return usuario;
+    }
+
+    private Usuario buscarUsuario(Long id) {
+        return usuarioRepository.findById(id)
             .orElseThrow(() -> new RecursoNaoEncontradoException(
-                "Cliente " + id + " não encontrado"));
+                "Usuário " + id + " não encontrado"));
     }
 
     private Categoria buscarCategoria(Long id) {
         return categoriaRepository.findById(id)
             .orElseThrow(() -> new RecursoNaoEncontradoException(
                 "Categoria " + id + " não encontrada"));
-    }
-
-    private Tecnico buscarTecnico(Long id) {
-        if (id == null) {
-            return null;
-        }
-        return tecnicoRepository.findById(id)
-            .orElseThrow(() -> new RecursoNaoEncontradoException(
-                "Técnico " + id + " não encontrado"));
     }
 }

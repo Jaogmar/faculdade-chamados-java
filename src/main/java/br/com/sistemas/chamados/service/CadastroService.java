@@ -5,57 +5,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.sistemas.chamados.dto.CadastroRequest;
 import br.com.sistemas.chamados.dto.CadastroResponse;
-import br.com.sistemas.chamados.entity.Cliente;
-import br.com.sistemas.chamados.entity.Tecnico;
+import br.com.sistemas.chamados.dto.UsuarioResponse;
 import br.com.sistemas.chamados.entity.Usuario;
-import br.com.sistemas.chamados.repository.ClienteRepository;
-import br.com.sistemas.chamados.repository.TecnicoRepository;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.security.TokenService;
-import br.com.sistemas.chamados.security.UsuarioLogado;
 
 /** Autocadastro: o próprio usuário cria a conta e informa se é CLIENTE ou TECNICO. */
 @Service
 public class CadastroService {
 
     private final UsuarioService usuarioService;
-    private final ClienteRepository clienteRepository;
-    private final TecnicoRepository tecnicoRepository;
     private final TokenService tokenService;
 
-    public CadastroService(UsuarioService usuarioService,
-                           ClienteRepository clienteRepository,
-                           TecnicoRepository tecnicoRepository,
-                           TokenService tokenService) {
+    public CadastroService(UsuarioService usuarioService, TokenService tokenService) {
         this.usuarioService = usuarioService;
-        this.clienteRepository = clienteRepository;
-        this.tecnicoRepository = tecnicoRepository;
         this.tokenService = tokenService;
     }
 
     @Transactional
     public CadastroResponse cadastrar(CadastroRequest dto) {
-        Usuario usuario = usuarioService.novo(dto.email(), dto.senha(), dto.tipo().getPerfil());
-
-        Long id;
-        UsuarioLogado logado;
-        switch (dto.tipo()) {
-            case CLIENTE -> {
-                Cliente cliente = clienteRepository.save(
-                    new Cliente(dto.nome(), dto.telefone(), usuario));
-                id = cliente.getId();
-                logado = new UsuarioLogado(usuario.getId(), usuario.getEmail(),
-                    usuario.getPerfil(), null, id);
-            }
-            case TECNICO -> {
-                Tecnico tecnico = tecnicoRepository.save(new Tecnico(dto.nome(), usuario));
-                id = tecnico.getId();
-                logado = new UsuarioLogado(usuario.getId(), usuario.getEmail(),
-                    usuario.getPerfil(), id, null);
-            }
-            default -> throw new IllegalStateException("Tipo não suportado: " + dto.tipo());
+        if (!dto.perfil().isAutocadastravel()) {
+            throw new RegraNegocioException("Perfil deve ser CLIENTE ou TECNICO");
         }
-
-        return new CadastroResponse(id, dto.nome(), usuario.getEmail(), dto.tipo(),
-            tokenService.gerar(logado));
+        Usuario usuario = usuarioService.novo(
+            dto.nome(), dto.email(), dto.senha(), dto.telefone(), dto.perfil());
+        return new CadastroResponse(UsuarioResponse.de(usuario), tokenService.gerar(usuario));
     }
 }

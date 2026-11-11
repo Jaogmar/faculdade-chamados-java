@@ -21,4 +21,6 @@ public interface ChamadoRepository extends JpaRepository<Chamado, Long> {
         """)
     Page<Chamado> filtrar(StatusChamado status, Prioridade prioridade,
                           Long clienteId, Pageable pageable);
+
+    boolean existsByClienteIdOrTecnicoId(Long clienteId, Long tecnicoId);
 }

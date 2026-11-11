@@ -47,13 +47,12 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/cadastro").permitAll()
-                .requestMatchers(HttpMethod.POST, "/clientes").permitAll()
                 .requestMatchers("/h2-console/**", "/error").permitAll()
-                .requestMatchers("/tecnicos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/usuarios").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/usuarios/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/usuarios").hasAnyRole("ADMIN", "TECNICO")
                 .requestMatchers(HttpMethod.GET, "/categorias/**").authenticated()
                 .requestMatchers("/categorias/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/clientes").hasAnyRole("ADMIN", "TECNICO")
-                .requestMatchers(HttpMethod.DELETE, "/clientes/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

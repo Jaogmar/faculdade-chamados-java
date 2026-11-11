@@ -37,11 +37,7 @@ public class AuthController {
     @PostMapping("/cadastro")
     public ResponseEntity<CadastroResponse> cadastrar(@Valid @RequestBody CadastroRequest dto) {
         CadastroResponse criado = cadastroService.cadastrar(dto);
-        String recurso = switch (criado.tipo()) {
-            case CLIENTE -> "/clientes/";
-            case TECNICO -> "/tecnicos/";
-        };
-        return ResponseEntity.created(URI.create(recurso + criado.id())).body(criado);
+        return ResponseEntity.created(URI.create("/usuarios/" + criado.usuario().id())).body(criado);
     }
 
     @PostMapping("/login")

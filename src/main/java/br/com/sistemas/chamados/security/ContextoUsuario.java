@@ -20,7 +20,7 @@ import br.com.sistemas.chamados.exception.NaoAutenticadoException;
  *
  * UsuarioLogado usuario = contexto.atual();
  * if (usuario.isCliente()) {
- *     clienteId = usuario.clienteId();
+ *     clienteId = usuario.id();
  * }
  * }</pre>
  *
@@ -43,28 +43,14 @@ public class ContextoUsuario {
         }
         return Optional.of(new UsuarioLogado(
             Long.valueOf(jwt.getSubject()),
+            jwt.getClaimAsString(TokenService.CLAIM_NOME),
             jwt.getClaimAsString(TokenService.CLAIM_EMAIL),
-            Perfil.valueOf(jwt.getClaimAsString(TokenService.CLAIM_PERFIL)),
-            claimLong(jwt, TokenService.CLAIM_TECNICO_ID),
-            claimLong(jwt, TokenService.CLAIM_CLIENTE_ID)));
+            Perfil.valueOf(jwt.getClaimAsString(TokenService.CLAIM_PERFIL))));
     }
 
-    /** Id do cliente logado; lança 403 se o usuário não for um cliente. */
-    public Long clienteId() {
-        UsuarioLogado usuario = atual();
-        if (usuario.clienteId() == null) {
-            throw new AcessoNegadoException("Operação disponível apenas para clientes");
-        }
-        return usuario.clienteId();
-    }
-
-    /** Id do técnico logado (ADMIN ou TECNICO); lança 403 se o usuário não for um técnico. */
-    public Long tecnicoId() {
-        UsuarioLogado usuario = atual();
-        if (usuario.tecnicoId() == null) {
-            throw new AcessoNegadoException("Operação disponível apenas para técnicos");
-        }
-        return usuario.tecnicoId();
+    /** Id do usuário logado. */
+    public Long id() {
+        return atual().id();
     }
 
     /** Lança 403 se o usuário logado não tiver nenhum dos perfis informados. */
@@ -77,11 +63,15 @@ public class ContextoUsuario {
         return usuario;
     }
 
-    private static Long claimLong(Jwt jwt, String claim) {
-        Object valor = jwt.getClaim(claim);
-        if (valor instanceof Number n) {
-            return n.longValue();
+    /**
+     * Permite se o recurso pertence ao próprio usuário logado ou se ele tem um dos perfis
+     * informados; caso contrário, lança 403.
+     */
+    public UsuarioLogado exigirProprioOuPerfil(Long usuarioId, Perfil... perfis) {
+        UsuarioLogado usuario = atual();
+        if (!usuario.id().equals(usuarioId) && !usuario.possuiPerfil(perfis)) {
+            throw new AcessoNegadoException("Acesso negado ao usuário " + usuarioId);
         }
-        return valor != null ? Long.valueOf(valor.toString()) : null;
+        return usuario;
     }
 }

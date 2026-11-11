@@ -5,30 +5,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+
+import br.com.sistemas.chamados.support.ApiTestSupport;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class AuthControllerTest {
-
-    private static final Pattern TOKEN = Pattern.compile("\"token\"\\s*:\\s*\"([^\"]+)\"");
-
-    @Autowired
-    private MockMvc mvc;
+class AuthControllerTest extends ApiTestSupport {
 
     @Test
     void loginAdminRetornaToken() throws Exception {
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"admin@chamados.com\",\"senha\":\"admin123\"}"))
+                .content("{\"email\":\"" + ADMIN_EMAIL + "\",\"senha\":\"" + ADMIN_SENHA + "\"}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.token").isNotEmpty())
             .andExpect(jsonPath("$.perfil").value("ADMIN"));
@@ -37,7 +29,7 @@ class AuthControllerTest {
     @Test
     void loginComSenhaErradaRetorna401() throws Exception {
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"admin@chamados.com\",\"senha\":\"errada\"}"))
+                .content("{\"email\":\"" + ADMIN_EMAIL + "\",\"senha\":\"errada\"}"))
             .andExpect(status().isUnauthorized());
     }
 
@@ -50,41 +42,22 @@ class AuthControllerTest {
 
     @Test
     void rotaProtegidaComTokenRetorna200() throws Exception {
-        String token = login("admin@chamados.com", "admin123");
-        mvc.perform(get("/chamados").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        String token = login(ADMIN_EMAIL, ADMIN_SENHA);
+        mvc.perform(get("/chamados").header(HttpHeaders.AUTHORIZATION, bearer(token)))
             .andExpect(status().isOk());
-        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, bearer(token)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.perfil").value("ADMIN"))
-            .andExpect(jsonPath("$.tecnicoId").isNotEmpty());
+            .andExpect(jsonPath("$.id").isNotEmpty())
+            .andExpect(jsonPath("$.nome").value("Administrador"));
     }
 
     @Test
-    void clienteNaoPodeCadastrarTecnico() throws Exception {
-        mvc.perform(post("/clientes").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"nome\":\"Maria\",\"email\":\"maria@teste.com\",\"senha\":\"segredo1\"}"))
-            .andExpect(status().isCreated());
-        String token = login("maria@teste.com", "segredo1");
-
-        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-            .andExpect(jsonPath("$.perfil").value("CLIENTE"))
-            .andExpect(jsonPath("$.clienteId").isNotEmpty());
-
-        mvc.perform(post("/tecnicos").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+    void clienteNaoPodeCriarUsuarioPelaApiAdministrativa() throws Exception {
+        String token = token(cadastrar("Maria", "maria@auth.com", "CLIENTE"));
+        mvc.perform(post("/usuarios").header(HttpHeaders.AUTHORIZATION, bearer(token))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"nome\":\"X\",\"email\":\"x@teste.com\",\"perfil\":\"TECNICO\",\"senha\":\"segredo1\"}"))
+                .content("{\"nome\":\"X\",\"email\":\"x@auth.com\",\"perfil\":\"TECNICO\",\"senha\":\"segredo1\"}"))
             .andExpect(status().isForbidden());
-    }
-
-    private String login(String email, String senha) throws Exception {
-        String corpo = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"" + email + "\",\"senha\":\"" + senha + "\"}"))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-        Matcher m = TOKEN.matcher(corpo);
-        if (!m.find()) {
-            throw new AssertionError("Token não encontrado: " + corpo);
-        }
-        return m.group(1);
     }
 }
