@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -52,6 +53,12 @@ public class GlobalExceptionHandler {
             .map(e -> e.getField() + ": " + e.getDefaultMessage())
             .toList();
         return montar(HttpStatus.BAD_REQUEST, "Dados inválidos", detalhes);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErroResposta> corpoInvalido(HttpMessageNotReadableException ex) {
+        return montar(HttpStatus.BAD_REQUEST, "Corpo da requisição inválido",
+            List.of("Verifique o JSON e os valores dos campos (ex.: tipo deve ser CLIENTE ou TECNICO)"));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

@@ -46,7 +46,7 @@ public class SecurityConfig {
             .headers(h -> h.frameOptions(f -> f.sameOrigin())) // h2-console usa frames
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/cadastro").permitAll()
                 .requestMatchers(HttpMethod.POST, "/clientes").permitAll()
                 .requestMatchers("/h2-console/**", "/error").permitAll()
                 .requestMatchers("/tecnicos/**").hasRole("ADMIN")

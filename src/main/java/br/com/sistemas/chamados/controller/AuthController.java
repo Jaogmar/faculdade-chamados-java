@@ -1,16 +1,22 @@
 package br.com.sistemas.chamados.controller;
 
+import java.net.URI;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.sistemas.chamados.dto.CadastroRequest;
+import br.com.sistemas.chamados.dto.CadastroResponse;
 import br.com.sistemas.chamados.dto.LoginRequest;
 import br.com.sistemas.chamados.dto.TokenResponse;
 import br.com.sistemas.chamados.security.ContextoUsuario;
 import br.com.sistemas.chamados.security.UsuarioLogado;
 import br.com.sistemas.chamados.service.AuthService;
+import br.com.sistemas.chamados.service.CadastroService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -18,11 +24,24 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService service;
+    private final CadastroService cadastroService;
     private final ContextoUsuario contexto;
 
-    public AuthController(AuthService service, ContextoUsuario contexto) {
+    public AuthController(AuthService service, CadastroService cadastroService,
+                          ContextoUsuario contexto) {
         this.service = service;
+        this.cadastroService = cadastroService;
         this.contexto = contexto;
+    }
+
+    @PostMapping("/cadastro")
+    public ResponseEntity<CadastroResponse> cadastrar(@Valid @RequestBody CadastroRequest dto) {
+        CadastroResponse criado = cadastroService.cadastrar(dto);
+        String recurso = switch (criado.tipo()) {
+            case CLIENTE -> "/clientes/";
+            case TECNICO -> "/tecnicos/";
+        };
+        return ResponseEntity.created(URI.create(recurso + criado.id())).body(criado);
     }
 
     @PostMapping("/login")
