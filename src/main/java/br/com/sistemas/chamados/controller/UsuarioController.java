@@ -15,41 +15,42 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.sistemas.chamados.dto.ChamadoResponse;
-import br.com.sistemas.chamados.dto.ClienteRequest;
-import br.com.sistemas.chamados.dto.ClienteResponse;
+import br.com.sistemas.chamados.dto.UsuarioRequest;
+import br.com.sistemas.chamados.dto.UsuarioResponse;
+import br.com.sistemas.chamados.enums.Perfil;
 import br.com.sistemas.chamados.service.ChamadoService;
-import br.com.sistemas.chamados.service.ClienteService;
+import br.com.sistemas.chamados.service.UsuarioService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/clientes")
-public class ClienteController {
+@RequestMapping("/usuarios")
+public class UsuarioController {
 
-    private final ClienteService service;
+    private final UsuarioService service;
     private final ChamadoService chamadoService;
 
-    public ClienteController(ClienteService service, ChamadoService chamadoService) {
+    public UsuarioController(UsuarioService service, ChamadoService chamadoService) {
         this.service = service;
         this.chamadoService = chamadoService;
     }
 
     @PostMapping
-    public ResponseEntity<ClienteResponse> criar(
-            @Valid @RequestBody ClienteRequest dto) {
-        ClienteResponse criado = service.criar(dto);
-        return ResponseEntity.created(URI.create("/clientes/" + criado.id())).body(criado);
+    public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody UsuarioRequest dto) {
+        UsuarioResponse criado = service.criar(dto);
+        return ResponseEntity.created(URI.create("/usuarios/" + criado.id())).body(criado);
     }
 
     @GetMapping
-    public List<ClienteResponse> listar() {
-        return service.listar();
+    public List<UsuarioResponse> listar(@RequestParam(required = false) Perfil perfil) {
+        return service.listar(perfil);
     }
 
     @GetMapping("/{id}")
-    public ClienteResponse buscar(@PathVariable Long id) {
+    public UsuarioResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
     }
 
@@ -62,9 +63,7 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    public ClienteResponse atualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody ClienteRequest dto) {
+    public UsuarioResponse atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequest dto) {
         return service.atualizar(id, dto);
     }
 
