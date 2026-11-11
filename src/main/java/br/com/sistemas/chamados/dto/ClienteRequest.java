@@ -14,5 +14,9 @@ public record ClienteRequest(
     String email,
 
     @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
-    String telefone
+    String telefone,
+
+    /** Obrigatória no cadastro; na atualização, vazia mantém a senha atual. */
+    @Size(min = 6, max = 72, message = "Senha deve ter entre 6 e 72 caracteres")
+    String senha
 ) { }

@@ -15,11 +15,15 @@ import br.com.sistemas.chamados.entity.Cliente;
 import br.com.sistemas.chamados.entity.Tecnico;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
+import br.com.sistemas.chamados.exception.AcessoNegadoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.CategoriaRepository;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
 import br.com.sistemas.chamados.repository.ClienteRepository;
 import br.com.sistemas.chamados.repository.TecnicoRepository;
+import br.com.sistemas.chamados.security.ContextoUsuario;
+import br.com.sistemas.chamados.security.UsuarioLogado;
 
 @Service
 public class ChamadoService {
@@ -28,22 +32,25 @@ public class ChamadoService {
     private final ClienteRepository clienteRepository;
     private final CategoriaRepository categoriaRepository;
     private final TecnicoRepository tecnicoRepository;
+    private final ContextoUsuario contexto;
 
     public ChamadoService(ChamadoRepository repository,
                           ClienteRepository clienteRepository,
                           CategoriaRepository categoriaRepository,
-                          TecnicoRepository tecnicoRepository) {
+                          TecnicoRepository tecnicoRepository,
+                          ContextoUsuario contexto) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.categoriaRepository = categoriaRepository;
         this.tecnicoRepository = tecnicoRepository;
+        this.contexto = contexto;
     }
 
     @Transactional
     public ChamadoResponse criar(ChamadoRequest dto) {
         Chamado chamado = new Chamado(
             dto.titulo(), dto.descricao(), dto.prioridade(),
-            buscarCliente(dto.clienteId()),
+            buscarCliente(resolverClienteId(dto.clienteId())),
             buscarCategoria(dto.categoriaId()),
             buscarTecnico(dto.tecnicoId()));
         return ChamadoResponse.de(repository.save(chamado));
@@ -52,28 +59,33 @@ public class ChamadoService {
     @Transactional(readOnly = true)
     public Page<ChamadoResponse> listar(StatusChamado status, Prioridade prioridade,
                                         Long clienteId, Pageable pageable) {
+        UsuarioLogado usuario = contexto.atual();
+        if (usuario.isCliente()) {
+            clienteId = usuario.clienteId(); // cliente só enxerga os próprios chamados
+        }
         return repository.filtrar(status, prioridade, clienteId, pageable)
             .map(ChamadoResponse::de);
     }
 
     @Transactional(readOnly = true)
     public Page<ChamadoResponse> listarPorCliente(Long clienteId, Pageable pageable) {
+        verificarAcessoCliente(clienteId);
         buscarCliente(clienteId);
         return listar(null, null, clienteId, pageable);
     }
 
     @Transactional(readOnly = true)
     public ChamadoResponse buscar(Long id) {
-        return ChamadoResponse.de(buscarEntity(id));
+        return ChamadoResponse.de(buscarEntityComAcesso(id));
     }
 
     @Transactional
     public ChamadoResponse atualizar(Long id, ChamadoRequest dto) {
-        Chamado chamado = buscarEntity(id);
+        Chamado chamado = buscarEntityComAcesso(id);
         chamado.setTitulo(dto.titulo());
         chamado.setDescricao(dto.descricao());
         chamado.setPrioridade(dto.prioridade());
-        chamado.setCliente(buscarCliente(dto.clienteId()));
+        chamado.setCliente(buscarCliente(resolverClienteId(dto.clienteId())));
         chamado.setCategoria(buscarCategoria(dto.categoriaId()));
         chamado.setTecnico(buscarTecnico(dto.tecnicoId()));
         if (dto.status() != null) {
@@ -86,7 +98,35 @@ public class ChamadoService {
 
     @Transactional
     public void excluir(Long id) {
-        repository.delete(buscarEntity(id));
+        repository.delete(buscarEntityComAcesso(id));
+    }
+
+    /** Para CLIENTE o id vem do token; para ADMIN/TECNICO deve vir no request. */
+    private Long resolverClienteId(Long informado) {
+        UsuarioLogado usuario = contexto.atual();
+        if (usuario.isCliente()) {
+            return usuario.clienteId();
+        }
+        if (informado == null) {
+            throw new RegraNegocioException("Cliente é obrigatório");
+        }
+        return informado;
+    }
+
+    private void verificarAcessoCliente(Long clienteId) {
+        UsuarioLogado usuario = contexto.atual();
+        if (usuario.isCliente() && !clienteId.equals(usuario.clienteId())) {
+            throw new AcessoNegadoException("Acesso negado aos chamados do cliente " + clienteId);
+        }
+    }
+
+    private Chamado buscarEntityComAcesso(Long id) {
+        Chamado chamado = buscarEntity(id);
+        UsuarioLogado usuario = contexto.atual();
+        if (usuario.isCliente() && !chamado.getCliente().getId().equals(usuario.clienteId())) {
+            throw new AcessoNegadoException("Acesso negado ao chamado " + id);
+        }
+        return chamado;
     }
 
     private Chamado buscarEntity(Long id) {

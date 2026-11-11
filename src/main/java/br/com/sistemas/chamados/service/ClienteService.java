@@ -8,25 +8,33 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.sistemas.chamados.dto.ClienteRequest;
 import br.com.sistemas.chamados.dto.ClienteResponse;
 import br.com.sistemas.chamados.entity.Cliente;
+import br.com.sistemas.chamados.entity.Usuario;
+import br.com.sistemas.chamados.enums.Perfil;
+import br.com.sistemas.chamados.exception.AcessoNegadoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
-import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.ClienteRepository;
+import br.com.sistemas.chamados.security.ContextoUsuario;
+import br.com.sistemas.chamados.security.UsuarioLogado;
 
 @Service
 public class ClienteService {
 
     private final ClienteRepository repository;
+    private final UsuarioService usuarioService;
+    private final ContextoUsuario contexto;
 
-    public ClienteService(ClienteRepository repository) {
+    public ClienteService(ClienteRepository repository,
+                          UsuarioService usuarioService,
+                          ContextoUsuario contexto) {
         this.repository = repository;
+        this.usuarioService = usuarioService;
+        this.contexto = contexto;
     }
 
     @Transactional
     public ClienteResponse criar(ClienteRequest dto) {
-        if (repository.existsByEmail(dto.email())) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
-        }
-        Cliente salvo = repository.save(new Cliente(dto.nome(), dto.email(), dto.telefone()));
+        Usuario usuario = usuarioService.novo(dto.email(), dto.senha(), Perfil.CLIENTE);
+        Cliente salvo = repository.save(new Cliente(dto.nome(), dto.telefone(), usuario));
         return ClienteResponse.de(salvo);
     }
 
@@ -37,17 +45,16 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public ClienteResponse buscar(Long id) {
+        verificarAcesso(id);
         return ClienteResponse.de(buscarEntity(id));
     }
 
     @Transactional
     public ClienteResponse atualizar(Long id, ClienteRequest dto) {
+        verificarAcesso(id);
         Cliente cliente = buscarEntity(id);
-        if (repository.existsByEmailAndIdNot(dto.email(), id)) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
-        }
+        usuarioService.atualizar(cliente.getUsuario(), dto.email(), dto.senha());
         cliente.setNome(dto.nome());
-        cliente.setEmail(dto.email());
         cliente.setTelefone(dto.telefone());
         return ClienteResponse.de(cliente);
     }
@@ -55,6 +62,14 @@ public class ClienteService {
     @Transactional
     public void excluir(Long id) {
         repository.delete(buscarEntity(id));
+    }
+
+    /** Cliente só acessa o próprio cadastro; ADMIN/TECNICO acessam qualquer um. */
+    public void verificarAcesso(Long clienteId) {
+        UsuarioLogado usuario = contexto.atual();
+        if (usuario.isCliente() && !clienteId.equals(usuario.clienteId())) {
+            throw new AcessoNegadoException("Acesso negado ao cliente " + clienteId);
+        }
     }
 
     private Cliente buscarEntity(Long id) {
