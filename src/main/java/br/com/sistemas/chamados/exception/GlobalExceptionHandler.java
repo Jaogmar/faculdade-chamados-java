@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,6 +23,27 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ErroResposta> regraNegocio(RegraNegocioException ex) {
         return montar(HttpStatus.CONFLICT, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler({CredenciaisInvalidasException.class, NaoAutenticadoException.class})
+    public ResponseEntity<ErroResposta> naoAutenticado(RuntimeException ex) {
+        return montar(HttpStatus.UNAUTHORIZED, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResposta> autenticacao(AuthenticationException ex) {
+        return montar(HttpStatus.UNAUTHORIZED, "Não autenticado",
+            List.of("Envie um token válido no header Authorization: Bearer <token>"));
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResposta> acessoNegado(AcessoNegadoException ex) {
+        return montar(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResposta> acessoNegadoSpring(AccessDeniedException ex) {
+        return montar(HttpStatus.FORBIDDEN, "Acesso negado", List.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

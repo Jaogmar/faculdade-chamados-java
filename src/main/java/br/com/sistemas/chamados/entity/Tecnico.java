@@ -2,13 +2,14 @@ package br.com.sistemas.chamados.entity;
 
 import br.com.sistemas.chamados.enums.Perfil;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -22,26 +23,21 @@ public class Tecnico {
     @Column(nullable = false, length = 100)
     private String nome;
 
-    @Column(nullable = false, unique = true, length = 120)
-    private String email;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Perfil perfil;
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
 
     public Tecnico() { }
 
-    public Tecnico(String nome, String email, Perfil perfil) {
+    public Tecnico(String nome, Usuario usuario) {
         this.nome = nome;
-        this.email = email;
-        this.perfil = perfil;
+        this.usuario = usuario;
     }
 
     public Long getId() { return id; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public Perfil getPerfil() { return perfil; }
-    public void setPerfil(Perfil perfil) { this.perfil = perfil; }
+    public Usuario getUsuario() { return usuario; }
+    public String getEmail() { return usuario.getEmail(); }
+    public Perfil getPerfil() { return usuario.getPerfil(); }
 }
