@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chamados')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="cabecalho">
+        <h1>Chamados</h1>
+        <a class="btn" th:href="@{/app/chamados/novo}">Novo chamado</a>
+    </div>
+
+    <form class="cartao filtros" id="form-filtros" style="margin-top: 16px">
+        <div class="campo">
+            <label for="status">Status</label>
+            <select id="status" name="status"></select>
+        </div>
+        <div class="campo">
+            <label for="prioridade">Prioridade</label>
+            <select id="prioridade" name="prioridade"></select>
+        </div>
+        <div class="campo" data-perfil="ADMIN,TECNICO">
+            <label for="clienteId">Cliente</label>
+            <select id="clienteId" name="clienteId"></select>
+        </div>
+        <div class="acoes">
+            <button type="submit" class="btn">Filtrar</button>
+            <button type="button" class="btn btn-secundario" id="btn-limpar">Limpar</button>
+        </div>
+    </form>
+
+    <section class="cartao">
+        <p class="suave" id="vazio" hidden>Nenhum chamado encontrado.</p>
+        <div class="tabela-rolagem" id="tabela">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Título</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th>Categoria</th>
+                    <th>Cliente</th>
+                    <th>Técnico</th>
+                    <th>Abertura</th>
+                </tr>
+                </thead>
+                <tbody id="lista-chamados"></tbody>
+            </table>
+        </div>
+
+        <div class="paginacao">
+            <button type="button" class="btn btn-secundario" id="btn-anterior">Anterior</button>
+            <span id="info-pagina"></span>
+            <button type="button" class="btn btn-secundario" id="btn-proxima">Próxima</button>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/paginas/chamados-lista.js}"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chamado')}"></head>
+<link rel="stylesheet" th:href="@{/css/chamados.css}">
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina" th:attr="data-id=${id}">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="cabecalho">
+        <h1 id="titulo" th:text="'Chamado #' + ${id}">Chamado</h1>
+        <div class="acoes">
+            <a class="btn btn-secundario" th:href="@{/app/chamados}">Voltar</a>
+            <a class="btn btn-secundario" th:href="@{/app/chamados/{id}/editar(id=${id})}">Editar</a>
+            <button type="button" class="btn btn-perigo" id="btn-excluir">Excluir</button>
+        </div>
+    </div>
+
+    <section class="cartao" style="margin-top: 16px">
+        <p class="descricao" id="descricao"></p>
+        <dl class="dados">
+            <div><dt>Status</dt><dd id="status">-</dd></div>
+            <div><dt>Prioridade</dt><dd id="prioridade">-</dd></div>
+            <div><dt>Categoria</dt><dd id="categoria">-</dd></div>
+            <div><dt>Cliente</dt><dd id="cliente">-</dd></div>
+            <div><dt>Técnico</dt><dd id="tecnico">-</dd></div>
+            <div><dt>Abertura</dt><dd id="abertura">-</dd></div>
+            <div><dt>Fechamento</dt><dd id="fechamento">-</dd></div>
+        </dl>
+    </section>
+
+    <section class="cartao" data-perfil="ADMIN,TECNICO">
+        <h2>Atendimento</h2>
+        <form class="filtros" id="form-atendimento">
+            <div class="campo">
+                <label for="novo-status">Status</label>
+                <select id="novo-status" name="status" required></select>
+            </div>
+            <div class="campo">
+                <label for="novo-tecnico">Técnico</label>
+                <select id="novo-tecnico" name="tecnicoId"></select>
+            </div>
+            <button type="submit" class="btn">Salvar</button>
+        </form>
+    </section>
+
+    <section class="cartao">
+        <h2>Comentários</h2>
+        <p class="suave" id="sem-comentarios" hidden>Nenhum comentário ainda.</p>
+        <div id="lista-comentarios"></div>
+
+        <form id="form-comentario" style="margin-top: 16px">
+            <div class="campo">
+                <label for="texto">Adicionar comentário</label>
+                <textarea id="texto" name="texto" maxlength="2000" required></textarea>
+            </div>
+            <button type="submit" class="btn">Comentar</button>
+        </form>
+    </section>
+
+    <section class="cartao">
+        <h2>Histórico de status</h2>
+        <div class="tabela-rolagem">
+            <table>
+                <thead>
+                <tr>
+                    <th>De</th>
+                    <th>Para</th>
+                    <th>Responsável</th>
+                    <th>Data</th>
+                </tr>
+                </thead>
+                <tbody id="lista-historico"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/paginas/chamados-detalhe.js}"></script>
+</body>
+</html>

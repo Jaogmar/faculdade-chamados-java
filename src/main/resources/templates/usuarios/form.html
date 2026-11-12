@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${id != null ? 'Editar usuário' : 'Novo usuário'})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina" th:attr="data-id=${id}">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="cabecalho">
+        <h1 th:text="${id} != null ? 'Editar usuário #' + ${id} : 'Novo usuário'">Novo usuário</h1>
+        <a class="btn btn-secundario" th:href="${id} != null ? @{/app/usuarios/{id}(id=${id})} : @{/app/usuarios}">Voltar</a>
+    </div>
+
+    <form class="cartao" id="form-usuario" style="margin-top: 16px">
+        <div class="campo">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" maxlength="100" required>
+        </div>
+        <div class="grade">
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" maxlength="120" required>
+            </div>
+            <div class="campo">
+                <label for="telefone">Telefone (opcional)</label>
+                <input id="telefone" name="telefone" type="tel" maxlength="20">
+            </div>
+        </div>
+        <div class="grade">
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input id="senha" name="senha" type="password" minlength="6" maxlength="72"
+                       autocomplete="new-password">
+                <small class="suave" id="dica-senha" hidden>Deixe em branco para manter a senha atual.</small>
+            </div>
+            <div class="campo" data-perfil="ADMIN">
+                <label for="perfil">Perfil</label>
+                <select id="perfil" name="perfil"></select>
+            </div>
+        </div>
+        <div class="acoes">
+            <button type="submit" class="btn" id="btn-salvar">Salvar</button>
+        </div>
+    </form>
+</main>
+<script th:src="@{/js/paginas/usuarios-form.js}"></script>
+</body>
+</html>
