@@ -14,6 +14,8 @@ import br.com.sistemas.chamados.exception.AcessoNegadoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
+import br.com.sistemas.chamados.repository.ComentarioRepository;
+import br.com.sistemas.chamados.repository.HistoricoStatusRepository;
 import br.com.sistemas.chamados.repository.UsuarioRepository;
 import br.com.sistemas.chamados.security.ContextoUsuario;
 import br.com.sistemas.chamados.security.UsuarioLogado;
@@ -23,15 +25,21 @@ public class UsuarioService {
 
     private final UsuarioRepository repository;
     private final ChamadoRepository chamadoRepository;
+    private final ComentarioRepository comentarioRepository;
+    private final HistoricoStatusRepository historicoRepository;
     private final PasswordEncoder passwordEncoder;
     private final ContextoUsuario contexto;
 
     public UsuarioService(UsuarioRepository repository,
                           ChamadoRepository chamadoRepository,
+                          ComentarioRepository comentarioRepository,
+                          HistoricoStatusRepository historicoRepository,
                           PasswordEncoder passwordEncoder,
                           ContextoUsuario contexto) {
         this.repository = repository;
         this.chamadoRepository = chamadoRepository;
+        this.comentarioRepository = comentarioRepository;
+        this.historicoRepository = historicoRepository;
         this.passwordEncoder = passwordEncoder;
         this.contexto = contexto;
     }
@@ -100,7 +108,9 @@ public class UsuarioService {
     @Transactional
     public void excluir(Long id) {
         Usuario usuario = buscarEntity(id);
-        if (chamadoRepository.existsByClienteIdOrTecnicoId(id, id)) {
+        if (chamadoRepository.existsByClienteIdOrTecnicoId(id, id)
+                || comentarioRepository.existsByAutorId(id)
+                || historicoRepository.existsByResponsavelId(id)) {
             throw new RegraNegocioException(
                 "Usuário " + id + " possui chamados vinculados e não pode ser excluído");
         }
