@@ -18,12 +18,13 @@ public record ChamadoRequest(
     @NotNull(message = "Prioridade é obrigatória")
     Prioridade prioridade,
 
-    @NotNull(message = "Cliente é obrigatório")
+    /** Id do usuário CLIENTE. Obrigatório para ADMIN/TECNICO; para CLIENTE vem do token. */
     Long clienteId,
 
     @NotNull(message = "Categoria é obrigatória")
     Long categoriaId,
 
+    /** Id do usuário TECNICO/ADMIN responsável (opcional). */
     Long tecnicoId,
 
     StatusChamado status

@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,12 +26,39 @@ public class GlobalExceptionHandler {
         return montar(HttpStatus.CONFLICT, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler({CredenciaisInvalidasException.class, NaoAutenticadoException.class})
+    public ResponseEntity<ErroResposta> naoAutenticado(RuntimeException ex) {
+        return montar(HttpStatus.UNAUTHORIZED, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResposta> autenticacao(AuthenticationException ex) {
+        return montar(HttpStatus.UNAUTHORIZED, "Não autenticado",
+            List.of("Envie um token válido no header Authorization: Bearer <token>"));
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResposta> acessoNegado(AcessoNegadoException ex) {
+        return montar(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResposta> acessoNegadoSpring(AccessDeniedException ex) {
+        return montar(HttpStatus.FORBIDDEN, "Acesso negado", List.of());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResposta> validacao(MethodArgumentNotValidException ex) {
         List<String> detalhes = ex.getBindingResult().getFieldErrors().stream()
             .map(e -> e.getField() + ": " + e.getDefaultMessage())
             .toList();
         return montar(HttpStatus.BAD_REQUEST, "Dados inválidos", detalhes);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErroResposta> corpoInvalido(HttpMessageNotReadableException ex) {
+        return montar(HttpStatus.BAD_REQUEST, "Corpo da requisição inválido",
+            List.of("Verifique o JSON e os valores dos campos (ex.: tipo deve ser CLIENTE ou TECNICO)"));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

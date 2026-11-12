@@ -1,0 +1,38 @@
+package br.com.sistemas.chamados.config;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.sistemas.chamados.entity.Usuario;
+import br.com.sistemas.chamados.enums.Perfil;
+import br.com.sistemas.chamados.repository.UsuarioRepository;
+import br.com.sistemas.chamados.security.AdminProperties;
+
+/** Garante um administrador para o primeiro login (o banco H2 é em memória). */
+@Component
+public class AdminSeeder implements CommandLineRunner {
+
+    private final AdminProperties admin;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public AdminSeeder(AdminProperties admin,
+                       UsuarioRepository usuarioRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.admin = admin;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    @Transactional
+    public void run(String... args) {
+        if (usuarioRepository.existsByEmail(admin.email())) {
+            return;
+        }
+        usuarioRepository.save(new Usuario(admin.nome(), admin.email(),
+            passwordEncoder.encode(admin.senha()), null, Perfil.ADMIN));
+    }
+}
