@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Usuário')}"></head>
+<link rel="stylesheet" th:href="@{/css/usuarios.css}">
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina" th:attr="data-id=${id}">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="cabecalho">
+        <h1 id="titulo" th:text="'Usuário #' + ${id}">Usuário</h1>
+        <div class="acoes">
+            <a class="btn btn-secundario" th:href="@{/app/usuarios}" data-perfil="ADMIN,TECNICO">Voltar</a>
+            <a class="btn btn-secundario" id="btn-editar" hidden
+               th:href="@{/app/usuarios/{id}/editar(id=${id})}">Editar</a>
+            <button type="button" class="btn btn-perigo" id="btn-excluir" data-perfil="ADMIN">Excluir</button>
+        </div>
+    </div>
+
+    <section class="cartao" style="margin-top: 16px">
+        <dl class="dados">
+            <div><dt>Nome</dt><dd id="nome">-</dd></div>
+            <div><dt>E-mail</dt><dd id="email">-</dd></div>
+            <div><dt>Telefone</dt><dd id="telefone">-</dd></div>
+            <div><dt>Perfil</dt><dd id="perfil">-</dd></div>
+            <div><dt>Ativo</dt><dd id="ativo">-</dd></div>
+        </dl>
+    </section>
+
+    <section class="cartao" id="cartao-chamados" hidden>
+        <h2>Chamados do usuário</h2>
+        <p class="suave" id="vazio" hidden>Nenhum chamado encontrado.</p>
+        <div class="tabela-rolagem" id="tabela">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Título</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th>Técnico</th>
+                    <th>Abertura</th>
+                </tr>
+                </thead>
+                <tbody id="lista-chamados"></tbody>
+            </table>
+        </div>
+
+        <div class="paginacao">
+            <button type="button" class="btn btn-secundario" id="btn-anterior">Anterior</button>
+            <span id="info-pagina"></span>
+            <button type="button" class="btn btn-secundario" id="btn-proxima">Próxima</button>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/paginas/usuarios-detalhe.js}"></script>
+</body>
+</html>
