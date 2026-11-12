@@ -53,7 +53,7 @@ async function carregar() {
     const resposta = await api('GET', '/chamados'
         + queryString({ ...filtros, page: pagina, size: TAMANHO_PAGINA }));
     const chamados = resposta.content;
-    totalPaginas = resposta.page.totalPages;
+    totalPaginas = Math.max(1, resposta.page.totalPages);
 
     document.getElementById('vazio').hidden = chamados.length > 0;
     document.getElementById('tabela').hidden = chamados.length === 0;
