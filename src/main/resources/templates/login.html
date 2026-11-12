@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Entrar')}"></head>
+<body>
+<main class="centro">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+    <div class="cartao">
+        <h1>Entrar</h1>
+        <form id="form-login">
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" maxlength="120" required autofocus>
+            </div>
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" maxlength="72" required>
+            </div>
+            <button type="submit" class="btn" id="btn-entrar">Entrar</button>
+        </form>
+        <p class="suave">Ainda não tem conta? <a th:href="@{/app/cadastro}">Cadastre-se</a></p>
+    </div>
+</main>
+<script th:src="@{/js/paginas/login.js}"></script>
+</body>
+</html>

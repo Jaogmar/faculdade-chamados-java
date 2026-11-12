@@ -1,0 +1,111 @@
+:root {
+    --primaria: #1f6f43;
+    --primaria-escura: #17553a;
+    --texto: #222;
+    --suave: #666;
+    --borda: #d9d9d9;
+    --fundo: #f4f6f5;
+    --branco: #fff;
+    --erro: #b3261e;
+    --sucesso: #1f6f43;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--texto);
+    background: var(--fundo);
+}
+
+a { color: var(--primaria); }
+
+.navbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px;
+    background: var(--primaria);
+}
+.navbar a, .navbar span, .navbar .btn-link { color: var(--branco); text-decoration: none; }
+.navbar a:hover { text-decoration: underline; }
+.navbar a.ativo { font-weight: 700; }
+.navbar .marca { font-weight: 700; font-size: 1.1rem; margin-right: 8px; }
+.navbar .espaco { flex: 1; }
+
+.container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+.cartao {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.cabecalho { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cabecalho h1, .cabecalho h2 { margin: 0; }
+.centro { max-width: 420px; margin: 64px auto; }
+.grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.acoes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.suave { color: var(--suave); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--borda); }
+th { background: #fafafa; font-weight: 600; }
+tbody tr:hover { background: #f9fbfa; }
+.tabela-rolagem { overflow-x: auto; }
+
+.campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.campo label { font-weight: 600; font-size: .9rem; }
+input, select, textarea {
+    font: inherit;
+    padding: 8px 10px;
+    border: 1px solid var(--borda);
+    border-radius: 6px;
+    background: var(--branco);
+    width: 100%;
+}
+textarea { min-height: 100px; resize: vertical; }
+.filtros { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.filtros .campo { margin-bottom: 0; min-width: 160px; }
+
+.btn {
+    display: inline-block;
+    font: inherit;
+    padding: 8px 14px;
+    border: 1px solid var(--primaria);
+    border-radius: 6px;
+    background: var(--primaria);
+    color: var(--branco);
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn:hover { background: var(--primaria-escura); }
+.btn-secundario { background: var(--branco); color: var(--primaria); }
+.btn-secundario:hover { background: #eef5f1; }
+.btn-perigo { background: var(--erro); border-color: var(--erro); }
+.btn-link { background: none; border: none; padding: 0; cursor: pointer; font: inherit; }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.alerta { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid; }
+.alerta ul { margin: 6px 0 0; padding-left: 20px; }
+.alerta-erro { color: var(--erro); background: #fdecea; border-color: #f5c2bf; }
+.alerta-sucesso { color: var(--sucesso); background: #e8f4ee; border-color: #b9dcc8; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: #eee; }
+.badge-aberto { background: #e3f0ff; color: #0b57d0; }
+.badge-em_atendimento { background: #fff4d6; color: #8a5a00; }
+.badge-aguardando_cliente { background: #f1e6ff; color: #6b2fb3; }
+.badge-fechado { background: #e6e6e6; color: #444; }
+.badge-baixa { background: #e8f4ee; color: #1f6f43; }
+.badge-media { background: #e3f0ff; color: #0b57d0; }
+.badge-alta { background: #fff4d6; color: #8a5a00; }
+.badge-critica { background: #fdecea; color: #b3261e; }
+.badge-cliente { background: #e3f0ff; color: #0b57d0; }
+.badge-tecnico { background: #fff4d6; color: #8a5a00; }
+.badge-admin { background: #fdecea; color: #b3261e; }
+
+.paginacao { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 12px; }
+
+[hidden] { display: none !important; }

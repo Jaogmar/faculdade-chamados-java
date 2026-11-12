@@ -1,6 +1,7 @@
 package br.com.sistemas.chamados.controller;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,11 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.sistemas.chamados.dto.ChamadoDetalheResponse;
 import br.com.sistemas.chamados.dto.ChamadoRequest;
 import br.com.sistemas.chamados.dto.ChamadoResponse;
+import br.com.sistemas.chamados.dto.ComentarioRequest;
+import br.com.sistemas.chamados.dto.ComentarioResponse;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.service.ChamadoService;
+import br.com.sistemas.chamados.service.ComentarioService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -29,9 +34,11 @@ import jakarta.validation.Valid;
 public class ChamadoController {
 
     private final ChamadoService service;
+    private final ComentarioService comentarioService;
 
-    public ChamadoController(ChamadoService service) {
+    public ChamadoController(ChamadoService service, ComentarioService comentarioService) {
         this.service = service;
+        this.comentarioService = comentarioService;
     }
 
     @PostMapping
@@ -52,7 +59,7 @@ public class ChamadoController {
     }
 
     @GetMapping("/{id}")
-    public ChamadoResponse buscar(@PathVariable Long id) {
+    public ChamadoDetalheResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
     }
 
@@ -67,5 +74,20 @@ public class ChamadoController {
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         service.excluir(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/comentarios")
+    public ResponseEntity<ComentarioResponse> comentar(
+            @PathVariable Long id,
+            @Valid @RequestBody ComentarioRequest dto) {
+        ComentarioResponse criado = comentarioService.adicionar(id, dto);
+        return ResponseEntity
+            .created(URI.create("/chamados/" + id + "/comentarios/" + criado.id()))
+            .body(criado);
+    }
+
+    @GetMapping("/{id}/comentarios")
+    public List<ComentarioResponse> listarComentarios(@PathVariable Long id) {
+        return comentarioService.listar(id);
     }
 }

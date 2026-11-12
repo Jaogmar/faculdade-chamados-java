@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<link rel="stylesheet" th:href="@{/css/dashboard.css}">
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina" th:attr="data-id=${id}">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <h1 id="saudacao">Olá!</h1>
+    <p class="suave" id="subtitulo"></p>
+
+    <div class="grade">
+        <a class="cartao contador" th:href="@{/app/chamados(status='ABERTO')}">
+            <span class="badge badge-aberto">Aberto</span>
+            <span class="numero" id="total-ABERTO">-</span>
+        </a>
+        <a class="cartao contador" th:href="@{/app/chamados(status='EM_ATENDIMENTO')}">
+            <span class="badge badge-em_atendimento">Em atendimento</span>
+            <span class="numero" id="total-EM_ATENDIMENTO">-</span>
+        </a>
+        <a class="cartao contador" th:href="@{/app/chamados(status='AGUARDANDO_CLIENTE')}">
+            <span class="badge badge-aguardando_cliente">Aguardando cliente</span>
+            <span class="numero" id="total-AGUARDANDO_CLIENTE">-</span>
+        </a>
+        <a class="cartao contador" th:href="@{/app/chamados(status='FECHADO')}">
+            <span class="badge badge-fechado">Fechado</span>
+            <span class="numero" id="total-FECHADO">-</span>
+        </a>
+    </div>
+
+    <section class="cartao recentes">
+        <div class="cabecalho">
+            <h2>Chamados recentes</h2>
+            <a class="btn" th:href="@{/app/chamados/novo}">Novo chamado</a>
+        </div>
+        <p class="suave" id="vazio" hidden>Nenhum chamado ainda.</p>
+        <div class="tabela-rolagem" id="tabela-recentes">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Título</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th>Cliente</th>
+                    <th>Abertura</th>
+                </tr>
+                </thead>
+                <tbody id="lista-recentes"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/paginas/dashboard.js}"></script>
+</body>
+</html>
