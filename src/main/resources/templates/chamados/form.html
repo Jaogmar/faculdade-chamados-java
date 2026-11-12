@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${id != null ? 'Editar chamado' : 'Novo chamado'})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina" th:attr="data-id=${id}">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <div class="cabecalho">
+        <h1 th:text="${id} != null ? 'Editar chamado #' + ${id} : 'Novo chamado'">Novo chamado</h1>
+        <a class="btn btn-secundario" id="btn-voltar" th:href="${id} != null ? @{/app/chamados/{id}(id=${id})} : @{/app/chamados}">Voltar</a>
+    </div>
+
+    <form class="cartao" id="form-chamado" style="margin-top: 16px">
+        <div class="campo">
+            <label for="titulo">Título</label>
+            <input id="titulo" name="titulo" maxlength="150" required>
+        </div>
+        <div class="campo">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" maxlength="2000" required></textarea>
+        </div>
+        <div class="grade">
+            <div class="campo">
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade" name="prioridade" required></select>
+            </div>
+            <div class="campo">
+                <label for="categoriaId">Categoria</label>
+                <select id="categoriaId" name="categoriaId" required></select>
+            </div>
+        </div>
+        <div class="grade" data-perfil="ADMIN,TECNICO">
+            <div class="campo">
+                <label for="clienteId">Cliente</label>
+                <select id="clienteId" name="clienteId"></select>
+            </div>
+            <div class="campo">
+                <label for="tecnicoId">Técnico responsável (opcional)</label>
+                <select id="tecnicoId" name="tecnicoId"></select>
+            </div>
+        </div>
+        <div class="acoes">
+            <button type="submit" class="btn" id="btn-salvar">Salvar</button>
+        </div>
+    </form>
+</main>
+<script th:src="@{/js/paginas/chamados-form.js}"></script>
+</body>
+</html>
