@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' | Chamados'">Chamados</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/js/app.js}"></script>
+</head>
+
+<nav th:fragment="navbar" class="navbar">
+    <a class="marca" th:href="@{/app}">Chamados</a>
+    <a th:href="@{/app}">Dashboard</a>
+    <a th:href="@{/app/chamados}">Chamados</a>
+    <a th:href="@{/app/categorias}" data-perfil="ADMIN">Categorias</a>
+    <a th:href="@{/app/usuarios}" data-perfil="ADMIN,TECNICO">Usuários</a>
+    <span class="espaco"></span>
+    <span id="usuario-logado"></span>
+    <button type="button" class="btn btn-link" onclick="Sessao.sair()">Sair</button>
+</nav>
+
+<div th:fragment="mensagens" id="mensagens"></div>
+
+</body>
+</html>
