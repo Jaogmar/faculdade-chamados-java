@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Categorias')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" id="pagina">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+
+    <h1>Categorias</h1>
+
+    <section class="cartao" data-perfil="ADMIN">
+        <h2 id="titulo-form">Nova categoria</h2>
+        <form id="form-categoria">
+            <input type="hidden" name="id" id="id">
+            <div class="campo">
+                <label for="nome">Nome *</label>
+                <input type="text" name="nome" id="nome" maxlength="100" required>
+            </div>
+            <div class="campo">
+                <label for="descricao">Descrição</label>
+                <textarea name="descricao" id="descricao" maxlength="255"></textarea>
+            </div>
+            <div class="acoes">
+                <button type="submit" class="btn" id="btn-salvar">Salvar</button>
+                <button type="button" class="btn btn-secundario" id="btn-cancelar" hidden>Cancelar</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="cartao">
+        <h2>Categorias cadastradas</h2>
+        <p class="suave" id="vazio" hidden>Nenhuma categoria cadastrada.</p>
+        <div class="tabela-rolagem" id="tabela-categorias">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th data-perfil="ADMIN">Ações</th>
+                </tr>
+                </thead>
+                <tbody id="lista-categorias"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/paginas/categorias.js}"></script>
+</body>
+</html>

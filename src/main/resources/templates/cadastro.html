@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cadastro')}"></head>
+<body>
+<main class="centro">
+    <div th:replace="~{fragments/layout :: mensagens}"></div>
+    <div class="cartao">
+        <h1>Criar conta</h1>
+        <form id="form-cadastro">
+            <div class="campo">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" maxlength="100" required autofocus>
+            </div>
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" maxlength="120" required>
+            </div>
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" minlength="6" maxlength="72" required>
+                <small class="suave">Entre 6 e 72 caracteres.</small>
+            </div>
+            <div class="campo">
+                <label for="telefone">Telefone (opcional)</label>
+                <input type="tel" id="telefone" name="telefone" maxlength="20">
+            </div>
+            <div class="campo">
+                <label for="perfil">Perfil</label>
+                <select id="perfil" name="perfil" required>
+                    <option value="CLIENTE">Cliente</option>
+                    <option value="TECNICO">Técnico</option>
+                </select>
+            </div>
+            <button type="submit" class="btn" id="btn-cadastrar">Cadastrar</button>
+        </form>
+        <p class="suave">Já tem conta? <a th:href="@{/app/login}">Voltar ao login</a></p>
+    </div>
+</main>
+<script th:src="@{/js/paginas/cadastro.js}"></script>
+</body>
+</html>
