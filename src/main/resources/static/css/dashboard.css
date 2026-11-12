@@ -1,0 +1,4 @@
+.contador { display: block; margin-bottom: 0; text-decoration: none; color: var(--texto); }
+.contador:hover { border-color: var(--primaria); }
+.contador .numero { display: block; font-size: 2rem; font-weight: 700; margin-top: 8px; }
+.recentes { margin-top: 20px; }
