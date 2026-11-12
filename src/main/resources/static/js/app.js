@@ -183,11 +183,23 @@ function aplicarPerfis() {
     if (span && s) span.textContent = (s.nome || s.email || '') + ' (' + rotulo(s.perfil) + ')';
 }
 
+function marcarMenuAtivo() {
+    const caminho = window.location.pathname.replace(/\/+$/, '');
+    document.querySelectorAll('.navbar a:not(.marca)').forEach(link => {
+        const destino = link.getAttribute('href');
+        const ativo = destino === '/app'
+            ? caminho === '/app'
+            : caminho === destino || caminho.startsWith(destino + '/');
+        link.classList.toggle('ativo', ativo);
+    });
+}
+
 function paginaProtegida(iniciar) {
     document.addEventListener('DOMContentLoaded', async () => {
         const sessao = Sessao.exigir();
         if (!sessao) return;
         aplicarPerfis();
+        marcarMenuAtivo();
         try {
             await iniciar(sessao);
         } catch (e) {

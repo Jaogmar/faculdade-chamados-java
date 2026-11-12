@@ -31,6 +31,7 @@ a { color: var(--primaria); }
 }
 .navbar a, .navbar span, .navbar .btn-link { color: var(--branco); text-decoration: none; }
 .navbar a:hover { text-decoration: underline; }
+.navbar a.ativo { font-weight: 700; }
 .navbar .marca { font-weight: 700; font-size: 1.1rem; margin-right: 8px; }
 .navbar .espaco { flex: 1; }
 
